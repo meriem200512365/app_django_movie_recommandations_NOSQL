@@ -1,0 +1,64 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+
+<h1 style="border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 30px;">My Profile</h1>
+
+<section style="margin-bottom: 50px;">
+  <h2 style="color: var(--primary);">My Ratings</h2>
+  {% if ratings %}
+    <div style="background: var(--bg-card); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+      {% for r in ratings %}
+        <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between;">
+          <a href="{% url 'movies:detail' r.movie.pk %}" style="font-weight: 600;">{{ r.movie.title }}</a>
+          <span style="color: #fbbf24;">★ {{ r.score }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="color: var(--text-muted);">You haven't rated any movies yet.</p>
+  {% endif %}
+</section>
+
+<section style="margin-bottom: 50px;">
+  <h2>My Watchlist</h2>
+  {% if watchlist %}
+    <div class="movie-grid">
+      {% for item in watchlist %}
+        <div class="movie-card">
+          <a href="{% url 'movies:detail' item.movie.pk %}">
+            {% if item.movie.poster %}
+              <img class="poster" src="{{ item.movie.poster.url }}">
+            {% elif item.movie.poster_url %}
+              <img class="poster" src="{{ item.movie.poster_url }}">
+            {% else %}
+              <div style="aspect-ratio:2/3; background:#222;"></div>
+            {% endif %}
+            <div style="padding: 10px;">
+              <h3>{{ item.movie.title }}</h3>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="color: var(--text-muted);">Your watchlist is empty.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>My Reviews</h2>
+  {% if reviews %}
+    <div style="display: grid; gap: 20px;">
+      {% for rv in reviews %}
+        <div style="background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+          <h4 style="margin: 0 0 10px 0;"><a href="{% url 'movies:detail' rv.movie.pk %}">{{ rv.movie.title }}</a></h4>
+          <p style="color: #ccc; margin: 0; font-style: italic;">"{{ rv.content }}"</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="color: var(--text-muted);">You haven't written any reviews yet.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

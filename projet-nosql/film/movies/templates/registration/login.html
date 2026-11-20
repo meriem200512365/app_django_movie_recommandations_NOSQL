@@ -1,0 +1,145 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+<style>
+  /* Reuse auth-wrapper styles or keep them here if templates are separate */
+  .auth-wrapper {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-card {
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 40px 50px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+  }
+
+  .auth-card h1 {
+    margin-bottom: 10px;
+    font-size: 2rem;
+    background: linear-gradient(45deg, #fff, #a3a3a3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .auth-card p.subtitle {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #ddd;
+    font-weight: 500;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: white;
+    transition: 0.3s;
+  }
+  .form-group input:focus {
+    background: rgba(0,0,0,0.5);
+    border-color: var(--primary);
+    outline: none;
+  }
+
+  .error-box {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: left;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+    margin-top: 10px;
+  }
+  .btn-submit:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(168, 85, 247, 0.4);
+  }
+  
+  .auth-footer {
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .auth-footer a { color: var(--primary); font-weight: 600; }
+  .auth-footer a:hover { text-decoration: underline; }
+</style>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Enter your credentials to continue.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      
+      {% if form.non_field_errors %}
+        <div class="error-box">
+          {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+      <div class="form-group">
+        <label for="id_username">Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="id_password">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn-submit">Login</button>
+    </form>
+    
+    <div class="auth-footer">
+      New to FilmApp? <a href="{% url 'movies:register' %}">Create an account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

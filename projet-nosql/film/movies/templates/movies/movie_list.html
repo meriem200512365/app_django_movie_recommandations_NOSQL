@@ -1,0 +1,125 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+
+<style>
+  .filter-bar {
+    background: var(--bg-card);
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .filter-bar input {
+    background: var(--bg-body);
+    border: none;
+    color: #fff;
+  }
+  .filter-bar button {
+    padding: 10px 25px;
+  }
+  
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    list-style: none;
+    margin-top: 40px;
+    padding: 0;
+  }
+  .pagination a {
+    background: var(--bg-card);
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: white;
+  }
+  .pagination a:hover { background: var(--bg-hover); }
+</style>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+  <h1>Movies</h1>
+  {% if user.is_staff %}
+    <a href="{% url 'movies:create' %}" class="btn-nav">+ Add Movie</a>
+  {% endif %}
+</div>
+
+<form method="get" class="filter-bar">
+  <input type="text" name="q" placeholder="Search titles..." value="{{ q|default:'' }}" style="flex:2;">
+  <input type="text" name="year" placeholder="Year" value="{{ year|default:'' }}" style="width:100px">
+  <input type="text" name="min_rating" placeholder="Min Rating" value="{{ min_rating|default:'' }}" style="width:120px">
+  <!-- preserve active genre/tag filters when searching -->
+  {% if active_genre %}<input type="hidden" name="genre" value="{{ active_genre }}">{% endif %}
+  {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+  <button type="submit">Filter</button>
+</form>
+
+{% if active_genre_name or active_tag_name or active_genre or active_tag %}
+  <div style="margin:12px 0; display:flex; gap:12px; align-items:center;">
+    <strong>Active filters:</strong>
+    {% if active_genre_name %}
+      <span style="background:#333;color:#fff;padding:6px 10px;border-radius:999px;">Genre: {{ active_genre_name }}</span>
+    {% elif active_genre %}
+      <span style="background:#333;color:#fff;padding:6px 10px;border-radius:999px;">Genre: {{ active_genre }}</span>
+    {% endif %}
+    {% if active_tag_name %}
+      <span style="background:#333;color:#fff;padding:6px 10px;border-radius:999px;">Tag: {{ active_tag_name }}</span>
+    {% elif active_tag %}
+      <span style="background:#333;color:#fff;padding:6px 10px;border-radius:999px;">Tag: {{ active_tag }}</span>
+    {% endif %}
+    <a href="{% url 'movies:list' %}" style="margin-left:8px;">Clear filters</a>
+  </div>
+{% endif %}
+
+{% if page_obj.object_list.exists %}
+  <div class="movie-grid">
+    {% for movie in page_obj.object_list %}
+      <div class="movie-card">
+        <a href="{% url 'movies:detail' movie.pk %}">
+          {% if movie.poster %}
+            <img class="poster" src="{{ movie.poster.url }}" alt="{{ movie.title }}" loading="lazy">
+          {% elif movie.poster_url %}
+            <img class="poster" src="{{ movie.poster_url }}" alt="{{ movie.title }}" loading="lazy">
+          {% else %}
+            <div style="background:#222; aspect-ratio:2/3; display:flex; align-items:center; justify-content:center; border-radius:12px; color:#555;">No Image</div>
+          {% endif %}
+          
+          <div style="padding: 12px 5px;">
+            <h3>{{ movie.title }}</h3>
+            <div class="movie-meta">
+              <span>{{ movie.year|default:'N/A' }}</span> • 
+              <span style="color: gold;">★ {{ movie.avg_rating|default:'-'|floatformat:1 }}</span>
+            </div>
+          </div>
+        </a>
+        {% if user.is_staff %}
+          <div style="padding:6px 8px; display:flex; gap:8px; justify-content:flex-end;">
+            <a href="{% url 'movies:update' movie.pk %}" style="background:rgba(255,255,255,0.06); padding:6px 10px; border-radius:8px; color:#fff; text-decoration:none;">Edit</a>
+            <form method="post" action="{% url 'movies:delete' movie.pk %}" style="display:inline;" onsubmit="return confirm('Delete this movie?');">
+              {% csrf_token %}
+              <button type="submit" style="background:#b91c1c; color:#fff; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;">Delete</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <nav>
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+        <li><a href="?page={{ page_obj.previous_page_number }}&q={{ q }}">← Prev</a></li>
+      {% endif %}
+      <li><span style="padding:10px 15px; color:#666;">Page {{ page_obj.number }}</span></li>
+      {% if page_obj.has_next %}
+        <li><a href="?page={{ page_obj.next_page_number }}&q={{ q }}">Next →</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+{% else %}
+  <p style="text-align:center; color: #666; margin-top:50px;">No movies found matching your criteria.</p>
+{% endif %}
+
+{% endblock %}

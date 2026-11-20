@@ -1,0 +1,10 @@
+Django==4.2.*
+Pillow>=10.0
+
+# MySQL driver (choose one)
+mysqlclient>=2.2
+# PyMySQL>=1.1
+
+# NoSQL backends
+pymongo>=4.6
+neo4j>=5.14

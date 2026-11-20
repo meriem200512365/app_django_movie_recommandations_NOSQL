@@ -1,0 +1,28 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+<h1>Your Watchlist</h1>
+{% if items %}
+  <div class="watchlist-grid" style="display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:18px;">
+    {% for item in items %}
+      <div class="watchlist-card" style="background:var(--bg-card); padding:12px; border-radius:10px; display:flex; gap:12px; align-items:flex-start;">
+        <a href="{% url 'movies:detail' item.movie.pk %}" style="display:block; width:84px; flex:0 0 84px;">
+          {% if item.movie.poster %}
+            <img src="{{ item.movie.poster.url }}" alt="{{ item.movie.title }}" style="width:84px; height:126px; object-fit:cover; border-radius:8px;">
+          {% elif item.movie.poster_url %}
+            <img src="{{ item.movie.poster_url }}" alt="{{ item.movie.title }}" style="width:84px; height:126px; object-fit:cover; border-radius:8px;">
+          {% else %}
+            <div style="width:84px; height:126px; background:#222; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666;">No Image</div>
+          {% endif %}
+        </a>
+        <div style="flex:1;">
+          <a href="{% url 'movies:detail' item.movie.pk %}"><h3 style="margin:0 0 6px 0;">{{ item.movie.title }}</h3></a>
+          <div style="color:var(--text-muted); font-size:0.95rem; margin-bottom:6px;">{{ item.movie.year|default:'N/A' }} • {{ item.movie.duration }} min</div>
+          <div style="color:#999; font-size:0.9rem;">Added: {{ item.added_at|date:"SHORT_DATETIME_FORMAT" }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>Your watchlist is empty.</p>
+{% endif %}
+{% endblock %}

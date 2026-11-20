@@ -1,0 +1,54 @@
+{% extends 'movies/base.html' %}
+{% load static %}
+{% block content %}
+
+<div style="margin-bottom: 30px;">
+  <a href="{% url 'movies:recommendations_dashboard' %}" style="font-size:0.9rem; color:var(--text-muted);">← Back to Dashboard</a>
+  <h1 style="margin-top:10px;">{{ method }}</h1>
+  <p class="lead" style="color:var(--text-muted);">Full list of recommendations for this category.</p>
+</div>
+
+{% if items %}
+  <div class="movie-grid">
+    {% for it in items %}
+      <div class="movie-card">
+        {% if it.movie_id %}
+          <a href="{% url 'movies:detail' it.movie_id %}">
+            {% if it.poster %}
+              <img class="poster" src="{{ it.poster }}" loading="lazy">
+            {% elif it.poster_url %}
+              <img class="poster" src="{{ it.poster_url }}" loading="lazy">
+            {% else %}
+              <div style="aspect-ratio:2/3; background:#333; border-radius:12px;"></div>
+            {% endif %}
+            <div style="padding:10px 5px;">
+              <h3>{{ it.title }}</h3>
+              <p class="movie-meta">{{ it.year }}</p>
+            </div>
+          </a>
+        {% else %}
+          <a href="{% url 'movies:detail' it.pk %}">
+             {% if it.poster %}
+               <img class="poster" src="{{ it.poster.url }}" loading="lazy">
+             {% elif it.poster_url %}
+               <img class="poster" src="{{ it.poster_url }}" loading="lazy">
+             {% endif %}
+             <div style="padding:10px 5px;">
+               <h3>{{ it.title }}</h3>
+               <p class="movie-meta">
+                 {% if it.year %}{{ it.year }}{% endif %}
+               </p>
+             </div>
+          </a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div style="text-align:center; padding:50px;">
+    <h3>No results found</h3>
+    <p style="color:var(--text-muted);">Try interacting with more movies to generate data for this algorithm.</p>
+  </div>
+{% endif %}
+
+{% endblock %}

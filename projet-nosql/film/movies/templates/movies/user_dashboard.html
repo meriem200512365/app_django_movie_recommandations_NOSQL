@@ -1,0 +1,127 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+
+<style>
+  .dashboard-head {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .avatar-circle {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--primary), #ec4899);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: bold; color: white;
+  }
+  
+  /* Horizontal Scrolling Wrapper */
+  .horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding-bottom: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--bg-card);
+  }
+  .horizontal-scroll::-webkit-scrollbar { height: 8px; }
+  .horizontal-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+  
+  .horizontal-scroll .movie-card {
+    min-width: 160px; /* Fixed width for horizontal items */
+    width: 160px;
+  }
+
+  .review-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .dashboard-review-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+</style>
+
+<div class="dashboard-head">
+  <div class="avatar-circle">
+    {{ user.username|slice:":1"|upper }}
+  </div>
+  <div>
+    <h1 style="margin:0; font-size:2rem;">Hello, {{ user.username }}</h1>
+    <p style="color:var(--text-muted); margin:5px 0 0 0;">Member since {{ user.date_joined|date:"M Y" }}</p>
+  </div>
+</div>
+
+<section style="margin-bottom: 50px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+    <h2>Your Watchlist</h2>
+    {% if watchlist %}
+       <a href="{% url 'movies:watchlist' %}" style="font-size:0.9rem; color:var(--primary);">View All</a>
+    {% endif %}
+  </div>
+
+  {% if watchlist %}
+    <div class="horizontal-scroll">
+      {% for item in watchlist %}
+        <div class="movie-card">
+          <a href="{% url 'movies:detail' pk=item.movie.pk %}">
+            {% if item.movie.poster %}
+              <img class="poster" src="{{ item.movie.poster.url }}" alt="{{ item.movie.title }}">
+            {% elif item.movie.poster_url %}
+              <img class="poster" src="{{ item.movie.poster_url }}" alt="{{ item.movie.title }}">
+            {% else %}
+              <div style="aspect-ratio:2/3; background:#222; border-radius:12px;"></div>
+            {% endif %}
+            <h3 style="font-size:0.9rem; margin-top:10px;">{{ item.movie.title }}</h3>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p style="color:var(--text-muted); font-style:italic;">Your watchlist is empty. Add movies to track what you want to watch.</p>
+  {% endif %}
+</section>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+  <section>
+    <h2>Recent Ratings</h2>
+    {% if ratings %}
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        {% for r in ratings|slice:":5" %}
+          <div style="background:var(--bg-card); padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+             <span style="font-weight:600;">{{ r.movie.title }}</span>
+             <span style="color:#fbbf24; font-weight:bold;">★ {{ r.score }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color:var(--text-muted);">No ratings yet.</p>
+    {% endif %}
+  </section>
+
+  <section>
+    <h2>Recent Reviews</h2>
+    {% if reviews %}
+      <div style="display:flex; flex-direction:column; gap:15px;">
+        {% for rev in reviews|slice:":3" %}
+          <div class="dashboard-review-card">
+            <h4 style="margin:0 0 5px 0;"><a href="{% url 'movies:detail' pk=rev.movie.pk %}">{{ rev.movie.title }}</a></h4>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin:0;">{{ rev.content|truncatechars:100 }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="color:var(--text-muted);">No reviews yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% endblock %}

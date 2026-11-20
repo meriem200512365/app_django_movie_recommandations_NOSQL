@@ -1,0 +1,126 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+<style>
+  /* Centering container for the auth pages */
+  .auth-wrapper {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* The Glass Card */
+  .auth-card {
+    background: rgba(26, 26, 26, 0.95); /* Dark card background */
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+  }
+
+  .auth-card h1 {
+    margin-bottom: 10px;
+    font-size: 2rem;
+    background: linear-gradient(45deg, #fff, #a3a3a3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .auth-card p.subtitle {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+  }
+
+  /* Form Styling Updates */
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: left;
+  }
+  
+  /* Reset default margin for paragraphs inside the form if Django renders them */
+  .auth-form p { margin: 0; } 
+  
+  .auth-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  .auth-form input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #333;
+    transition: 0.3s;
+    width: 100%; /* Ensure inputs fill the card */
+  }
+  .auth-form input:focus {
+    background: rgba(0,0,0,0.5);
+    border-color: var(--primary);
+  }
+
+  .btn-submit {
+    margin-top: 10px;
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+  }
+  .btn-submit:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(168, 85, 247, 0.4);
+  }
+
+  .auth-footer {
+    margin-top: 25px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .auth-footer a { color: var(--primary); font-weight: 600; }
+  .auth-footer a:hover { text-decoration: underline; }
+</style>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h1>Create Account</h1>
+    <p class="subtitle">Join thousands of movie lovers today.</p>
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}
+            <small style="color:#666; display:block; margin-top:4px;">{{ field.help_text|safe }}</small>
+          {% endif %}
+          {% for error in field.errors %}
+            <div style="color: #ef4444; font-size: 0.85rem; margin-top: 4px;">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn-submit">Sign Up</button>
+    </form>
+    
+    <div class="auth-footer">
+      Already have an account? <a href="{% url 'movies:login' %}">Log In</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

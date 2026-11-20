@@ -1,0 +1,171 @@
+{% extends 'movies/base.html' %}
+{% block content %}
+
+<style>
+  .detail-header {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+  
+  @media(max-width: 768px) {
+    .detail-header { grid-template-columns: 1fr; }
+  }
+
+  .poster-wrapper img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .movie-info h1 { font-size: 3rem; margin-bottom: 10px; line-height:1.1; }
+  .meta-row { display: flex; gap: 20px; color: var(--text-muted); margin-bottom: 20px; font-size: 1.1rem; }
+  
+  .action-row { display: flex; gap: 15px; margin: 30px 0; }
+  
+  .btn-action {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: 50px;
+    font-weight: 600; cursor: pointer; border: none;
+  }
+  .btn-watch { background: white; color: black; }
+  .btn-watch:hover { background: #ddd; }
+  .btn-list { background: rgba(255,255,255,0.1); color: white; }
+  .btn-list:hover { background: rgba(255,255,255,0.2); }
+
+  .description { font-size: 1.1rem; color: #ccc; line-height: 1.8; max-width: 800px; }
+
+  .section-head { margin-top: 60px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+  
+  /* Reviews styling */
+  .review-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+  }
+  .review-user { color: var(--primary); font-weight: bold; margin-bottom: 5px; display:block; }
+</style>
+
+<div class="detail-header">
+  <div class="poster-wrapper">
+    {% if movie.poster %}
+      <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+    {% elif movie.poster_url %}
+      <img src="{{ movie.poster_url }}" alt="{{ movie.title }}">
+    {% else %}
+      <div style="height:450px; background:#222; border-radius:16px; display:flex; align-items:center; justify-content:center;">No Poster</div>
+    {% endif %}
+  </div>
+
+  <div class="movie-info">
+    <h1>{{ movie.title }}</h1>
+    <div class="meta-row">
+      <span>{{ movie.year }}</span>
+      <span>{{ movie.duration }} min</span>
+      <span style="color:#fbbf24">★ {{ avg_rating|floatformat:1 }}</span>
+    </div>
+
+    <style>
+      .badge { display:inline-block; background:#333; color:#fff; padding:6px 10px; border-radius:999px; margin-right:8px; font-size:0.9rem; }
+      .meta-list { margin-top:12px; color:var(--text-muted); }
+    </style>
+
+    <div class="meta-list">
+      <div><strong>Genres:</strong>
+        {% if movie.genres.all %}
+          {% for g in movie.genres.all %}
+            <a href="{% url 'movies:list' %}?genre={{ g.id }}" title="Voir tous les films du genre {{ g.name }}"><span class="badge">{{ g.name }}</span></a>
+          {% endfor %}
+        {% else %}
+          <span style="color:#777;">None</span>
+        {% endif %}
+      </div>
+      <div style="margin-top:8px;"><strong>Tags:</strong>
+        {% if movie.tags.all %}
+          {% for t in movie.tags.all %}
+            <a href="{% url 'movies:list' %}?tag={{ t.id }}" title="Voir tous les films taggés {{ t.name }}"><span class="badge">{{ t.name }}</span></a>
+          {% endfor %}
+        {% else %}
+          <span style="color:#777;">None</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-action btn-watch">▶ Play</button>
+      
+      {% if in_watchlist %}
+        <form method="post" action="{% url 'movies:watchlist_remove' movie.pk %}">{% csrf_token %}
+          <button class="btn-action btn-list">✓ Saved</button>
+        </form>
+      {% else %}
+        <form method="post" action="{% url 'movies:watchlist_add' movie.pk %}">{% csrf_token %}
+          <button class="btn-action btn-list">+ My List</button>
+        </form>
+      {% endif %}
+      
+      {% if user.is_staff %}
+        <a href="{% url 'movies:update' movie.pk %}" class="btn-action btn-list">Edit</a>
+        <form method="post" action="{% url 'movies:delete' movie.pk %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this movie?');">
+          {% csrf_token %}
+          <button type="submit" class="btn-action" style="background:#b91c1c;color:white;">Delete</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <p class="description">{{ movie.description }}</p>
+    
+    <div style="margin-top: 30px; background: var(--bg-card); padding: 20px; border-radius: 12px; display: inline-block;">
+      <h4 style="margin:0 0 10px 0;">Rate this movie</h4>
+      <form method="post" action="{% url 'movies:add_rating' movie.pk %}" style="display:flex; gap:10px;">
+        {% csrf_token %}
+        {{ rating_form.score }} 
+        <button type="submit" style="padding:5px 15px;">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra %}
+  {% if content_recs %}
+  <h3 class="section-head">More Like This</h3>
+  <div class="movie-grid">
+    {% for m in content_recs|slice:":6" %}
+      <div class="movie-card">
+        <a href="{% url 'movies:detail' m.pk %}">
+          {% if m.poster %}
+            <img class="poster" src="{{ m.poster.url }}">
+          {% elif m.poster_url %}
+             <img class="poster" src="{{ m.poster_url }}">
+          {% endif %}
+          <div style="padding:10px;">
+            <h3>{{ m.title }}</h3>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  
+  <h3 class="section-head">Reviews</h3>
+  <div>
+    {% for r in reviews %}
+      <div class="review-card">
+        <span class="review-user">{{ r.user.username }}</span>
+        {{ r.content }}
+      </div>
+    {% empty %}
+      <p style="color:#666;">No reviews yet.</p>
+    {% endfor %}
+  </div>
+  
+  <form method="post" action="{% url 'movies:add_review' movie.pk %}" style="margin-top:20px;">
+    {% csrf_token %}
+    {{ review_form.content }}
+    <button type="submit" style="margin-top:10px;">Add Review</button>
+  </form>
+{% endblock %}
+
+{% endblock %}
